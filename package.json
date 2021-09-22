@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "re:build": "rescript build && esbuild src/index.js --bundle --outfile=build/index.js --platform=node",
+    "re:build": "rescript build && esbuild src/index.js --bundle --outfile=build/index.js --platform=node --minify",
     "re:watch": "rescript build -w -ws 0.0.0.0:9999",
     "cjson:run": "node src/index \"test/*.json\"",
     "test": "echo \"Error: no test specified\" && exit 1"
