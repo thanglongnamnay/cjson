@@ -10,7 +10,7 @@ Generate c++ code from json file.
 - Run `node build "~/json/*.json"`.
 - Outputs are now in `~/json`.
 
-## Developmen
+## Development
 - Run `npm run re:watch` to watch change to Rescript code.
 - Run `npm run cjson:run` anytime you want to run the tool with `test` folder.
 - Run `npm re:build` to build to `build/index.js`
