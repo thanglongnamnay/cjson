@@ -11,11 +11,9 @@ const main = async (argv) => {
     try {
       const content = await fs.readFile(file, 'utf8');
       const cpp = JsonToCpp.run(path.parse(file).name, content);
-      if (cpp) await fs.outputFile(file.replace(".json", "_generated.h"), cpp);
-      // const java = JsonToJava.run(path.parse(file).name, content);
-      // if (java) await fs.outputFile(file.replace(".json", "_generated.java"), java);
+      await fs.outputFile(file.replace(".json", "_generated.h"), cpp);
     } catch (e) {
-      console.error("Some go wrong", e);
+      console.error("Some go wrong while parsing file:", file, e);
     }
   }));
 }

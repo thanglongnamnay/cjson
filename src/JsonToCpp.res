@@ -122,21 +122,18 @@ let rec genCpp = (name, schema) => {
 }
 
 let run = (name, json) => {
-  try {
-    Some(
-      j`
+  let cpp = JsonToCode.run(json)->genCpp(name, _)
+
+  j`
 #ifndef ${name->Js.String2.toUpperCase}_GENERATED_H
 #define ${name->Js.String2.toUpperCase}_GENERATED_H
 
 #include "cjson/cjson.h"
 namespace cjson {
-${(JsonToCode.run(json)->genCpp(name, _)).typedef}
+${cpp.typedef}
+using ${name} = ${cpp.expr};
 }
 
 #endif
-`,
-    )
-  } catch {
-  | _ => None
-  }
+`
 }

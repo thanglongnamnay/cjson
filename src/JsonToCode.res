@@ -105,4 +105,4 @@ let rec toSchema = json => {
     }
   }
 }
-let run = json => Combinators.run(obj, json)->Combinators.get_exn->toSchema
+let run = json => Combinators.run(Lazy.force(expr), json)->Combinators.get_exn->toSchema
