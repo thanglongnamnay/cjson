@@ -4,15 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "re:build": "rescript build",
+    "re:build": "rescript build && esbuild src/index.js --bundle --outfile=build/index.js --platform=node",
     "re:watch": "rescript build -w -ws 0.0.0.0:9999",
-    "run": "node src/index \"test/*.json\"",
+    "cjson:run": "node src/index \"test/*.json\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "esbuild": "^0.12.28",
     "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0",
     "is-var-name": "^2.0.0",
