@@ -41,13 +41,14 @@ let rec join = (a, b) => {
   | (Option(a), Unknown) => Option(a)
   | (Unknown, b) => Option(b)
   | (a, Unknown) => Option(a)
-  | (Bool, Bool) => Bool
-  | (Number, Number) => Number
-  | (String, String) => String
   | (a, Option(b)) => Option(join(a, b))
   | (Option(a), b) => Option(join(a, b))
   | (Array(a), Array(b)) => Array(join(a, b))
+  | (Array(_), _) => Unknown
+  | (_, Array(_)) => Unknown
   | (Map(a), Map(b)) => Map(join(a, b))
+  | (Map(_), _) => Unknown
+  | (_, Map(_)) => Unknown
   | (Object(a), Object(b)) =>
     Map.String.merge(a, b, (_, a, b) => {
       switch (a, b) {
@@ -57,7 +58,15 @@ let rec join = (a, b) => {
       | (None, None) => assert false
       }
     })->Object
-  | _ => Unknown
+  | (Bool, Bool) => Bool
+  | (Bool, _) => Unknown
+  | (_, Bool) => Unknown
+  | (Number, Number) => Number
+  | (Number, _) => Unknown
+  | (_, Number) => Unknown
+  | (String, String) => String
+  | (String, _) => Unknown
+  | (_, String) => Unknown
   }
 }
 
@@ -105,4 +114,4 @@ let rec toSchema = json => {
     }
   }
 }
-let run = json => Combinators.run(Lazy.force(expr), json)->Combinators.get_exn->toSchema
+let run = json => StringParser.run(Lazy.force(expr), json)->StringParser.get_exn->toSchema

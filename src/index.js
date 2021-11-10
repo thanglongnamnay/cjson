@@ -1,8 +1,8 @@
+require("util").inspect.defaultOptions.depth = 6;
 const glob = require('fast-glob');
 const fs = require('fs-extra');
 const path = require('path');
 const JsonToCpp = require('./JsonToCpp.bs');
-const JsonToJava = require('./JsonToJava.bs');
 
 const main = async (argv) => {
   const files = await glob(argv[2]);

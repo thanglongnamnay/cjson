@@ -1,15 +1,8 @@
-let explode = str => {
-  let rec exp = (i, list) =>
-    if i < 0 {
-      list
-    } else {
-      exp(i - 1, [String.get(str, i)]->Belt.Array.concat(list))
-    }
-  exp(String.length(str) - 1, [])
-}
+let explode = str => str->Js.String2.split("")->Belt.Array.map(String.get(_, 0))
 
-let char_to_string = Js.String2.fromCharCode
+let char_to_string = char => char->Char.code->Js.String2.fromCharCode
 
-let char_list_to_string = chars => chars->Belt.Array.reduce("", (a, v) => a ++ char_to_string(v))
+let char_array_to_string = chars => chars->Belt.Array.reduce("", (a, v) => a ++ char_to_string(v))
+let char_list_to_string = chars => chars->Belt.List.reduce("", (a, v) => a ++ char_to_string(v))
 
 let take = (n, arr) => arr->Belt.Array.slice(~offset=0, ~len=n)
