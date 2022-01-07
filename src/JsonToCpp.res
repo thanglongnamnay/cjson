@@ -63,7 +63,8 @@ let rec genCpp = (name, schema) => {
   switch schema {
   | Unknown => makeCppType("", "unknown")
   | Bool => makeCppType("", "bool")
-  | Number => makeCppType("", "double")
+  | Int64 => makeCppType("", "long long")
+  | Double => makeCppType("", "double")
   | String => makeCppType("", "std::string")
   | Option(schema) => makeTemplatedType(genCpp(j`${name}_element`, schema), "maybe")
   | Array(Unknown) => makeCppType("", "vector<unknown>")
@@ -82,6 +83,12 @@ let rec genCpp = (name, schema) => {
         entries
         ->Belt.Map.String.toArray
         ->Belt.Array.map(((name, value)) => (name, value, genCpp(name, value)))
+      let tie = prefix =>
+        elements
+        ->Belt.Array.map(((name, _, _)) => j`${prefix}.${safe(name)}`)
+        ->Js.Array2.joinWith(", ")
+      let tieLhs = tie("lhs")
+      let tieRhs = tie("rhs")
       let declarations =
         elements
         ->Belt.Array.map(((name, _, t)) => j`const ${t.expr} ${safe(name)}` ++ ";\n")
@@ -93,7 +100,8 @@ let rec genCpp = (name, schema) => {
           switch value {
           | Unknown => j`${name'}()`
           | Bool => j`${name'}(v["${name}"].GetBool())`
-          | Number => j`${name'}(v["${name}"].GetDouble())`
+          | Int64 => j`${name'}(v["${name}"].GetInt64())`
+          | Double => j`${name'}(v["${name}"].GetDouble())`
           | String => j`${name'}(v["${name}"].GetString())`
           | Option(_) => j`${name'}(v, "${name}")`
           | Array(Unknown) => j`${name'}(vector<unknown>())`
@@ -103,7 +111,7 @@ let rec genCpp = (name, schema) => {
           }
         })
         ->Js.Array2.joinWith(",\n")
-      let name' = safe(name)
+      let name' = safe(name) ++ "_t"
       makeCppType(
         elements->Belt.Array.length > 0
           ? j`struct ${name'} {
@@ -111,6 +119,23 @@ let rec genCpp = (name, schema) => {
           ${declarations}
           explicit ${name'}(const rapidjson::Value& v) :
           ${assignments} {}
+
+          ${name'}(const ${name'}& other) = default;
+          ${name'}(${name'}&& other) noexcept = default;
+
+          ${name'}& operator=(${name'} other) {
+              using std::swap;
+              swap(*this, other);
+              return *this;
+          }
+
+          friend bool operator==(const ${name'}& lhs, const ${name'}& rhs) {
+              return std::tie(${tieLhs}) == std::tie(${tieRhs});
+          }
+
+          friend bool operator!=(const ${name'}& lhs, const ${name'}& rhs) {
+              return !(lhs == rhs);
+          }
           };`
           : j`struct ${name'} {
             explicit ${name'}(const rapidjson::Value& v) {}

@@ -4,7 +4,8 @@ open Belt
 type rec schema =
   | Unknown
   | Bool
-  | Number
+  | Int64
+  | Double
   | String
   | Option(schema)
   | Array(schema)
@@ -15,7 +16,8 @@ let rec stringify = schema =>
   switch schema {
   | Unknown => "unknown"
   | Bool => "bool"
-  | Number => "number"
+  | Int64 => "Int64"
+  | Double => "double"
   | String => "string"
   | Option(schema) => `Option(${stringify(schema)})`
   | Array(schema) => `Array(${stringify(schema)})`
@@ -61,9 +63,14 @@ let rec join = (a, b) => {
   | (Bool, Bool) => Bool
   | (Bool, _) => Unknown
   | (_, Bool) => Unknown
-  | (Number, Number) => Number
-  | (Number, _) => Unknown
-  | (_, Number) => Unknown
+  | (Int64, Double) => Double
+  | (Double, Int64) => Double
+  | (Int64, Int64) => Int64
+  | (Int64, _) => Unknown
+  | (_, Int64) => Unknown
+  | (Double, Double) => Double
+  | (Double, _) => Unknown
+  | (_, Double) => Unknown
   | (String, String) => String
   | (String, _) => Unknown
   | (_, String) => Unknown
@@ -73,7 +80,7 @@ let rec join = (a, b) => {
 let rec toSchema = json => {
   switch json {
   | JBool(_) => Bool
-  | JNumber(_) => Number
+  | JNumber(value) => value->Int64.of_float->Int64.to_float == value ? Int64 : Double
   | JString(_) => String
   | JOption(v) => Option(Option.isSome(v) ? toSchema(Option.getExn(v)) : Unknown)
   | JArray([]) => Array(Unknown)
@@ -95,7 +102,8 @@ let rec toSchema = json => {
           switch firstSchema {
           | Unknown
           | Bool
-          | Number
+          | Int64
+          | Double
           | String =>
             Object(schemas) // primitive dont usually make a map
           | _ =>
