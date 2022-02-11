@@ -28,9 +28,7 @@ let rec stringify = schema =>
         ->Map.String.toArray
         ->Array.map(((key, schema)) => `${key}: ${stringify(schema)}, `)
         ->Js.Array2.joinWith("\n")
-      `Object(
-          ${props}
-        )`
+      `Object(${props})`
     }
   }
 
@@ -43,7 +41,9 @@ let rec join = (a, b) => {
   | (Option(a), Unknown) => Option(a)
   | (Unknown, b) => Option(b)
   | (a, Unknown) => Option(a)
+  | (a, Option(Unknown)) => Option(a)
   | (a, Option(b)) => Option(join(a, b))
+  | (Option(Unknown), b) => Option(b)
   | (Option(a), b) => Option(join(a, b))
   | (Array(a), Array(b)) => Array(join(a, b))
   | (Array(_), _) => Unknown
@@ -82,7 +82,7 @@ let rec toSchema = json => {
   | JBool(_) => Bool
   | JNumber(value) => value->Int64.of_float->Int64.to_float == value ? Int64 : Double
   | JString(_) => String
-  | JOption(v) => Option(Option.isSome(v) ? toSchema(Option.getExn(v)) : Unknown)
+  | JOption(v) => Option(v->Option.map(toSchema)->Option.getWithDefault(Unknown))
   | JArray([]) => Array(Unknown)
   | JArray(v) =>
     v->Array.reduce(v->Array.getExn(0)->toSchema, (a, v) => join(a, v->toSchema))->Array
